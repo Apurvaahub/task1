@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>E-commerce PWA</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Web App Manifest for PWA features -->
+    <link rel="manifest" href="/manifest.json">
+    <style>
+        /* Custom Inter font (optional, Tailwind usually handles sans-serif) */
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f0f2f5; /* Light gray background */
+        }
+        /* Basic styling for the container */
+        .container {
+            max-width: 420px; /* Slightly wider for better form spacing */
+            margin: 50px auto;
+            padding: 2.5rem; /* Increased padding */
+            background-color: #ffffff;
+            border-radius: 1rem; /* More rounded */
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1); /* Softer, larger shadow */
+        }
+        /* Adjusted container for product page to be wider */
+        .product-container {
+            max-width: 900px;
+            margin: 50px auto;
+            padding: 2.5rem;
+            background-color: #ffffff;
+            border-radius: 1rem;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+        }
+        .form-input {
+            width: 100%;
+            padding: 0.75rem 1rem; /* More padding */
+            margin-bottom: 1.25rem; /* More margin */
+            border: 1px solid #d1d5db; /* Lighter border */
+            border-radius: 0.5rem; /* Rounded */
+            outline: none; /* Remove default outline */
+            transition: border-color 0.2s; /* Smooth transition */
+        }
+        .form-input:focus {
+            border-color: #6366f1; /* Indigo focus color */
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2); /* Soft focus ring */
+        }
+        .btn {
+            width: 100%;
+            padding: 0.8rem 1.2rem; /* Generous padding */
+            border-radius: 0.75rem; /* Very rounded */
+            font-weight: 600; /* Semi-bold */
+            transition: background-color 0.2s, transform 0.1s; /* Smooth transitions */
+            cursor: pointer;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1); /* Button shadow */
+        }
+        .btn-primary {
+            background-color: #6366f1; /* Indigo */
+            color: #ffffff;
+        }
+        .btn-primary:hover {
+            background-color: #4f46e5; /* Darker indigo on hover */
+            transform: translateY(-1px); /* Slight lift */
+        }
+        .btn-primary:active {
+            transform: translateY(0); /* Press effect */
+        }
+        .btn-secondary {
+            background-color: #e5e7eb; /* Light gray */
+            color: #4b5563; /* Darker text */
+        }
+        .btn-secondary:hover {
+            background-color: #d1d5db; /* Darker gray on hover */
+            transform: translateY(-1px);
+        }
+        .message-box {
+            padding: 0.8rem;
+            border-radius: 0.5rem;
+            margin-bottom: 1rem;
+            text-align: center;
+            font-weight: 500;
+        }
+        .message-success {
+            background-color: #d1fae5; /* Light green */
+            color: #065f46; /* Dark green text */
+        }
+        .message-error {
+            background-color: #fee2e2; /* Light red */
+            color: #991b1b; /* Dark red text */
+        }
+        .tab-button {
+            flex: 1;
+            padding: 0.75rem;
+            text-align: center;
+            font-weight: 600;
+            cursor: pointer;
+            border-bottom: 3px solid transparent;
+            transition: border-color 0.2s, color 0.2s;
+        }
+        .tab-button.active {
+            border-color: #6366f1;
+            color: #6366f1;
+        }
+        .tab-button:not(.active):hover {
+            color: #4f46e5;
+        }
+        .product-card {
+            border: 1px solid #e5e7eb;
+            border-radius: 0.75rem;
+            padding: 1.5rem;
+            text-align: center;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+            transition: transform 0.2s;
+        }
+        .product-card:hover {
+            transform: translateY(-5px);
+        }
+        .product-image {
+            width: 100%;
+            height: 150px;
+            object-fit: cover;
+            border-radius: 0.5rem;
+            margin-bottom: 1rem;
+        }
+    </style>
+</head>
+<body class="flex items-center justify-center min-h-screen">
+    <!-- Main Authentication Container (visible when not logged in) -->
+    <div id="authContainer" class="container mx-auto">
+        <h1 class="text-3xl font-bold text-center mb-6 text-gray-800">E-commerce PWA</h1>
+
+        <!-- Tab Navigation -->
+        <div class="flex mb-6 border-b border-gray-200">
+            <button id="loginTab" class="tab-button active">Login</button>
+            <button id="registerTab" class="tab-button">Register</button>
+        </div>
+
+        <!-- Message Display Area -->
+        <div id="messageBox" class="message-box hidden"></div>
+
+        <!-- Login Section -->
+        <div id="loginSection">
+            <h2 class="text-2xl font-semibold text-center mb-6 text-gray-700">Login</h2>
+            <input type="email" id="loginEmail" placeholder="Email" class="form-input" autocomplete="email">
+            <input type="password" id="loginPassword" placeholder="Password" class="form-input" autocomplete="current-password">
+            <button id="loginBtn" class="btn btn-primary mb-4">Login</button>
+            <p class="text-center text-sm text-gray-600">Don't have an account? <span class="text-indigo-600 cursor-pointer font-medium" onclick="showSection('register')">Register here</span></p>
+        </div>
+
+        <!-- Register Section -->
+        <div id="registerSection" class="hidden">
+            <h2 class="text-2xl font-semibold text-center mb-6 text-gray-700">Register</h2>
+            <input type="email" id="registerEmail" placeholder="Email" class="form-input" autocomplete="email">
+            <input type="password" id="registerPassword" placeholder="Password" class="form-input" autocomplete="new-password">
+            <button id="registerBtn" class="btn btn-primary mb-4">Register</button>
+            <p class="text-center text-sm text-gray-600">Already have an account? <span class="text-indigo-600 cursor-pointer font-medium" onclick="showSection('login')">Login here</span></p>
+        </div>
+    </div>
+
+    <!-- E-commerce Products Page (visible when logged in) -->
+    <div id="productsPage" class="product-container hidden">
+        <div class="flex justify-between items-center mb-6">
+            <h2 class="text-3xl font-bold text-gray-800">Products</h2>
+            <div class="flex items-center">
+                <span id="loggedInUserEmail" class="font-bold text-indigo-600 mr-4 text-lg"></span>
+                <button id="logoutBtn" class="btn btn-secondary w-auto px-6 py-2">Logout</button>
+            </div>
+        </div>
+
+        <!-- Push Notification Permission Button -->
+        <div class="text-center mb-8">
+            <button id="enablePushNotificationsBtn" class="btn btn-primary w-auto px-6 py-3 text-sm">Enable Push Notifications</button>
+            <p id="pushStatus" class="text-gray-500 text-sm mt-2"></p>
+        </div>
+
+        <div id="productsGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <!-- Product Cards will be injected here by JavaScript -->
+        </div>
+    </div>
+
+    <script>
+        // --- DOM Elements ---
+        const authContainer = document.getElementById('authContainer');
+        const productsPage = document.getElementById('productsPage');
+        const loginSection = document.getElementById('loginSection');
+        const registerSection = document.getElementById('registerSection');
+        const messageBox = document.getElementById('messageBox');
+        const loggedInUserEmailSpan = document.getElementById('loggedInUserEmail');
+        const productsGrid = document.getElementById('productsGrid');
+
+        const loginEmailInput = document.getElementById('loginEmail');
+        const loginPasswordInput = document.getElementById('loginPassword');
+        const registerEmailInput = document.getElementById('registerEmail');
+        const registerPasswordInput = document.getElementById('registerPassword');
+
+        const loginBtn = document.getElementById('loginBtn');
+        const registerBtn = document.getElementById('registerBtn');
+        const logoutBtn = document.getElementById('logoutBtn');
+
+        const loginTab = document.getElementById('loginTab');
+        const registerTab = document.getElementById('registerTab');
+
+        const enablePushNotificationsBtn = document.getElementById('enablePushNotificationsBtn');
+        const pushStatus = document.getElementById('pushStatus');
+
+        // --- Simulated Database (In a real app, this would be a server-side database) ---
+        // Stores users as { email: 'base64_encoded_password' }
+        let users = {};
+        // Current logged-in user's email
+        let loggedInUser = null;
+
+        // --- Product Data (Simulated E-commerce Products) ---
+        const products = [
+            { id: 1, name: 'Vintage Camera', price: 299.99, image: 'https://placehold.co/300x150/8a2be2/ffffff?text=Camera' },
+            { id: 2, name: 'Classic Headphones', price: 149.99, image: 'https://placehold.co/300x150/228B22/ffffff?text=Headphones' },
+            { id: 3, name: 'Smart Watch', price: 199.99, image: 'https://placehold.co/300x150/DC143C/ffffff?text=Watch' },
+            { id: 4, name: 'Mechanical Keyboard', price: 120.00, image: 'https://placehold.co/300x150/FFD700/000000?text=Keyboard' },
+            { id: 5, name: 'Designer Backpack', price: 79.50, image: 'https://placehold.co/300x150/4682B4/ffffff?text=Backpack' },
+            { id: 6, name: 'Wireless Mouse', price: 45.00, image: 'https://placehold.co/300x150/FA8072/ffffff?text=Mouse' }
+        ];
+
+        // --- Utility Functions ---
+
+        /**
+         * Displays a message in the message box.
+         * @param {string} message - The message to display.
+         * @param {'success'|'error'} type - The type of message (determines styling).
+         */
+        function displayMessage(message, type) {
+            messageBox.textContent = message;
+            messageBox.className = `message-box ${type === 'success' ? 'message-success' : 'message-error'}`;
+            messageBox.classList.remove('hidden');
+            setTimeout(() => {
+                messageBox.classList.add('hidden');
+            }, 3000); // Hide after 3 seconds
+        }
+
+        /**
+         * Validates an email address format.
+         * @param {string} email - The email string to validate.
+         * @returns {boolean} True if valid, false otherwise.
+         */
+        function isValidEmail(email) {
+            const re = /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+            return re.test(String(email).toLowerCase());
+        }
+
+        /**
+         * Renders the product cards into the products grid.
+         */
+        function renderProducts() {
+            productsGrid.innerHTML = ''; // Clear existing products
+            products.forEach(product => {
+                const productCard = `
+                    <div class="product-card">
+                        <img src="${product.image}" alt="${product.name}" class="product-image">
+                        <h3 class="text-lg font-semibold mb-2 text-gray-800">${product.name}</h3>
+                        <p class="text-xl font-bold text-indigo-600 mb-4">$${product.price.toFixed(2)}</p>
+                        <button class="btn btn-primary text-sm px-4 py-2">Add to Cart</button>
+                    </div>
+                `;
+                productsGrid.insertAdjacentHTML('beforeend', productCard);
+            });
+        }
+
+        /**
+         * Updates the UI based on the current authentication state.
+         */
+        function updateUI() {
+            if (loggedInUser) {
+                // User is logged in, show products page
+                authContainer.classList.add('hidden');
+                productsPage.classList.remove('hidden');
+                loggedInUserEmailSpan.textContent = loggedInUser; // Display logged-in email
+                renderProducts(); // Render products when logged in
+            } else {
+                // User is not logged in, show authentication container
+                authContainer.classList.remove('hidden');
+                productsPage.classList.add('hidden');
+                // Determine which tab was active or default to login
+                if (loginTab.classList.contains('active')) {
+                    loginSection.classList.remove('hidden');
+                    registerSection.classList.add('hidden');
+                } else {
+                    registerSection.classList.remove('hidden');
+                    loginSection.classList.add('hidden');
+                }
+            }
+        }
+
+        /**
+         * Switches between login and register sections.
+         * @param {'login'|'register'} section - The section to show.
+         */
+        function showSection(section) {
+            if (section === 'login') {
+                loginSection.classList.remove('hidden');
+                registerSection.classList.add('hidden');
+                loginTab.classList.add('active');
+                registerTab.classList.remove('active');
+            } else {
+                registerSection.classList.remove('hidden');
+                loginSection.classList.add('hidden');
+                registerTab.classList.add('active');
+                loginTab.classList.remove('active');
+            }
+            messageBox.classList.add('hidden'); // Clear any previous messages
+        }
+
+        // --- Authentication Functions ---
+
+        /**
+         * Handles user registration.
+         */
+        function handleRegister() {
+            const email = registerEmailInput.value.trim();
+            const password = registerPasswordInput.value.trim();
+
+            if (!email || !password) {
+                displayMessage('Please fill in all fields.', 'error');
+                return;
+            }
+
+            if (!isValidEmail(email)) {
+                displayMessage('Please enter a valid email address.', 'error');
+                return;
+            }
+
+            if (password.length < 6) {
+                displayMessage('Password must be at least 6 characters long.', 'error');
+                return;
+            }
+
+            if (users[email]) {
+                displayMessage('User with this email already exists.', 'error');
+                return;
+            }
+
+            // Simulate password hashing (base64 encoding for client-side demo)
+            const hashedPassword = btoa(password);
+            users[email] = hashedPassword;
+
+            displayMessage('Registration successful! Please log in.', 'success');
+            registerEmailInput.value = '';
+            registerPasswordInput.value = '';
+            showSection('login'); // Automatically switch to login after registration
+            console.log('Registered users:', users); // For debugging
+        }
+
+        /**
+         * Handles user login.
+         */
+        function handleLogin() {
+            const email = loginEmailInput.value.trim();
+            const password = loginPasswordInput.value.trim();
+
+            if (!email || !password) {
+                displayMessage('Please fill in all fields.', 'error');
+                return;
+            }
+
+            if (!isValidEmail(email)) {
+                displayMessage('Please enter a valid email address.', 'error');
+                return;
+            }
+
+            const storedPassword = users[email];
+
+            if (!storedPassword || storedPassword !== btoa(password)) {
+                displayMessage('Invalid email or password.', 'error');
+                return;
+            }
+
+            loggedInUser = email;
+            displayMessage('Login successful!', 'success');
+            loginEmailInput.value = '';
+            loginPasswordInput.value = '';
+            updateUI(); // Update UI to show secured page (now products page)
+        }
+
+        /**
+         * Handles user logout.
+         */
+        function handleLogout() {
+            loggedInUser = null;
+            displayMessage('You have been logged out.', 'success');
+            updateUI(); // Update UI to show login/register
+            showSection('login'); // Ensure login section is shown after logout
+        }
+
+        // --- PWA Service Worker Registration ---
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/service-worker.js')
+                    .then(registration => {
+                        console.log('Service Worker registered with scope:', registration.scope);
+                        // Check for existing subscription for push notifications
+                        registration.pushManager.getSubscription()
+                            .then(subscription => {
+                                if (subscription) {
+                                    pushStatus.textContent = 'Push notifications are enabled.';
+                                } else {
+                                    pushStatus.textContent = 'Push notifications are not enabled.';
+                                }
+                            });
+                    })
+                    .catch(error => {
+                        console.error('Service Worker registration failed:', error);
+                    });
+            });
+        }
+
+        // --- Push Notification Logic (Client-side part) ---
+        // VAPID public key (replace with your actual server-generated key in a real app)
+        // For demonstration, this is a placeholder. In a real app, this would come from your backend.
+        const applicationServerKey = 'BPj96XF0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
